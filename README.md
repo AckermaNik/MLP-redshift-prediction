@@ -41,44 +41,23 @@ The hidden layers use ReLU activation functions, and the output layer produces o
 
 ### Baseline comparison
 
-The notebook compares the neural model with the linear regression baseline from the previous analysis:
-
-| Model | Test MSE | Test R² |
-| --- | ---: | ---: |
-| Linear Regression baseline | 14.5674 | 0.0081 |
-| Baseline MLP | 0.1336 | 0.0334 |
-
-The recorded results show a substantially lower MSE for the MLP, although the low R² indicates that predicting the target remains difficult and that the model does not explain most of the target variance.
+The notebook's evaluation cell compares the MLP with a Linear Regression baseline fit on the same Phase 2 training split. Both are evaluated on the same held-out test partition using MSE and R². The previously recorded Phase 1 scores used encoded classes and are invalid for redshift; rerun Phase 1 after its correction if you need a cross-phase comparison.
 
 ### Learning-rate sensitivity
 
-The training loop evaluates learning rates of `0.01`, `0.001`, and `0.0001`. The notebook studies the trade-off between convergence speed and stability. The intermediate learning rate provides a smoother optimization path, while the larger rate converges quickly but shows more fluctuation near the end of training.
+The training loop evaluates learning rates of `0.01`, `0.001`, and `0.0001` using training loss. Each run uses the same initialization and minibatch order. Inspect the current curves to compare progress and stability; this experiment does not use validation loss to select a rate.
 
 ### Optimizer comparison
 
-Vanilla stochastic gradient descent and Adam are compared under the same regression setup:
-
-| Optimizer | Convergence trigger | Validation MSE | Test MSE |
-| --- | ---: | ---: | ---: |
-| Vanilla SGD | Epoch 36 | 0.1096 | 0.1333 |
-| Adam | Epoch 38 | 0.0875 | 0.0968 |
-
-Adam achieves the lower validation and test errors. The notebook also notes that the earlier SGD convergence trigger does not necessarily mean better learning; it can indicate that optimization stopped improving prematurely.
+Vanilla stochastic gradient descent and Adam are compared under the same regression setup. The notebook reports the validation and test MSE calculated for the current run. The two optimizers now start from the same initialization and minibatch order to make the comparison more controlled. The convergence trigger is a plateau heuristic, not proof of reaching a global or local minimum.
 
 ### Early stopping
 
-Manual early stopping is evaluated with a patience of 30 epochs and a minimum improvement threshold of `1e-4`. Training stops at epoch 214 after the validation loss fails to improve sufficiently for the configured patience window.
-
-Recorded results:
-
-- Final validation MSE: `0.1119`
-- Held-out test MSE: `0.1362`
+Manual early stopping uses a patience of 30 epochs and a minimum validation-loss improvement threshold of `1e-4`. It restores the best weights selected by validation loss before calculating the final test score. The actual stopping epoch and current validation/test MSE are printed by the notebook when it runs.
 
 ## Residual and error analysis
 
-The notebook compares the residual distributions of the linear baseline and the best Adam-trained MLP. The MLP produces a tighter concentration of errors around zero, while the linear model has a wider spread and more extreme deviations.
-
-It also identifies the five worst MLP predictions. These difficult samples are associated with very distant objects: the true target values are high, while the model consistently predicts much smaller redshift values. The analysis finds that many of these difficult samples are also the same observations that caused large errors for the linear baseline.
+The notebook compares residuals from the Phase 2 linear baseline and Adam-trained MLP, both evaluated on the same test split. It also lists the five largest absolute MLP residuals and compares those samples with the linear baseline. Rerun the notebook to generate current residual plots and sample-level findings.
 
 ## Technologies
 
